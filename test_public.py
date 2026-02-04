@@ -2,53 +2,65 @@ import pytest
 from solution import StreamProcessor
 
 
-def test_basic_ordering():
-    """Requirement: get_clean_stream must return values sorted by seq."""
+def test_price_priority_execution():
+    """
+    Requirement: Incoming orders must deplete the most competitive
+    prices first (lowest ASK for buyers, highest BID for sellers).
+    """
     sp = StreamProcessor()
-    sp.add_message({"seq": 10, "val": "C"})
-    sp.add_message({"seq": 1, "val": "A"})
-    sp.add_message({"seq": 5, "val": "B"})
-    assert sp.get_clean_stream() == ["A", "B", "C"]
+    # Populate two sell levels
+    sp.add_message({"seq": 1, "side": "ASK", "price": 10.0, "volume": 10})
+    sp.add_message({"seq": 2, "side": "ASK", "price": 11.0, "volume": 10})
+
+    # Buy order that crosses both levels
+    sp.add_message({"seq": 3, "side": "BUY", "price": 11.0, "volume": 15})
+
+    depth = sp.get_book_depth()
+    # All volume at 10.0 should be gone, 5 units remain at 11.0
+    assert depth["ASKS"] == [(11.0, 5)]
+    assert depth["BIDS"] == []
 
 
-def test_de_duplication_first_seen():
-    """Requirement: Only the FIRST valid value for a seq ID is kept."""
+def test_mid_price_calculation():
+    """Requirement: Mid-price is the average of the best bid and best ask."""
     sp = StreamProcessor()
-    sp.add_message({"seq": 1, "val": "Keep"})
-    sp.add_message({"seq": 1, "val": "Ignore"})
-    assert sp.get_clean_stream() == ["Keep"]
+    sp.add_message({"seq": 1, "side": "BUY", "price": 99.0, "volume": 10})
+    sp.add_message({"seq": 2, "side": "ASK", "price": 101.0, "volume": 10})
+
+    assert sp.get_mid_price() == 100.0
 
 
-def test_null_filtering():
-    """Requirement: Messages with val=None must be ignored."""
+def test_order_cancellation():
+    """Requirement: CANCEL should remove volume associated with a specific seq."""
     sp = StreamProcessor()
-    sp.add_message({"seq": 1, "val": None})
-    sp.add_message({"seq": 2, "val": "Valid"})
-    assert sp.get_clean_stream() == ["Valid"]
+    sp.add_message({"seq": 1, "side": "BUY", "price": 50.0, "volume": 100})
+    sp.add_message({"seq": 2, "side": "BUY", "price": 50.0, "volume": 50})
 
+    # Verify aggregate volume at the level is 150
+    assert sp.get_book_depth()["BIDS"] == [(50.0, 150)]
 
-def test_retroactive_cancellation():
-    """Requirement: CANCEL action must remove existing data for that seq."""
-    sp = StreamProcessor()
-    sp.add_message({"seq": 1, "val": "Value1"})
-    sp.add_message({"seq": 2, "val": "Value2"})
+    # Cancel the first order
     sp.add_message({"seq": 1, "action": "CANCEL"})
-    assert sp.get_clean_stream() == ["Value2"]
+
+    # Volume should now be 50
+    assert sp.get_book_depth()["BIDS"] == [(50.0, 50)]
 
 
-def test_proactive_cancellation():
-    """Requirement: CANCEL action must blacklist future data for that seq."""
+def test_incomplete_book_mid_price():
+    """Requirement: Return 0.0 if one or both sides are empty."""
     sp = StreamProcessor()
-    sp.add_message({"seq": 9, "action": "CANCEL"})
-    sp.add_message({"seq": 9, "val": "I am blacklisted"})
-    sp.add_message({"seq": 1, "val": "Visible"})
-    assert sp.get_clean_stream() == ["Visible"]
+    sp.add_message({"seq": 1, "side": "BUY", "price": 10.0, "volume": 5})
+    assert sp.get_mid_price() == 0.0
 
 
-def test_mixed_types():
-    """Requirement: Values can be of Any type (int, float, str)."""
+def test_residual_volume():
+    """Requirement: Remaining volume after matching must be added to the book."""
     sp = StreamProcessor()
-    sp.add_message({"seq": 1, "val": 100})
-    sp.add_message({"seq": 2, "val": "string_val"})
-    sp.add_message({"seq": 3, "val": 10.5})
-    assert sp.get_clean_stream() == [100, "string_val", 10.5]
+    sp.add_message({"seq": 1, "side": "ASK", "price": 100.0, "volume": 10})
+
+    # Buy 25 units at 100.0. 10 match, 15 should rest on the BID side.
+    sp.add_message({"seq": 2, "side": "BUY", "price": 100.0, "volume": 25})
+
+    depth = sp.get_book_depth()
+    assert depth["ASKS"] == []
+    assert depth["BIDS"] == [(100.0, 15)]
