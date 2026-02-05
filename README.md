@@ -10,7 +10,7 @@ This assessment requires the implementation of a **Limit Order Book (LOB)**. A l
 
 This assessment will test your familiarity with Python and GitHub. Furthermore, it will give you a basic working understanding of LOBs, which will form the basis of your algorithms during this competition.
 
-**Your task:** Complete the methods in the `StreamProcessor` class in `solutions.py`. **Do not modify any other files.**
+#### **Your task:** Complete the methods in the `StreamProcessor` class in `solutions.py`. **Do not modify any other files.**
 
 
 ### Core Objectives
