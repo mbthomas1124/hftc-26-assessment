@@ -32,6 +32,19 @@ The system must process a continuous stream of messages to perform the following
 * **Price Discovery:** Identify matches when an incoming order price overlaps with existing prices on the opposite side of the book.
 * **Volume Aggregation:** Provide a clear snapshot of total liquidity available at each price level and calculate the prevailing mid-price.
 
+---
+
+## Environment Requirements
+
+To ensure compatibility with the autograder and the internal testing suite, you **must** use **Python 3.11**. 
+
+* **Why 3.11?** The hidden test suite (`grader.py`) is pre-compiled for the Python 3.11 bytecode. Using other versions (such as 3.10, 3.12, or 3.13) will result in a `RuntimeError` or a `Bad Magic Number` error during execution.
+* **Verification:** Before starting, verify your active version by running the following in your terminal:
+  ```bash
+  python --version
+
+Both `solutions.py` and `test_public.py` include a version guard. If you attempt to execute the code using a version other than **Python 3.11**, the script will print an environment error and exit. This is to ensure that your local development environment matches the automated grading environment.
+
 
 ---
 
