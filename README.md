@@ -1,6 +1,6 @@
 # Technical Assessment: Limit Order Book Implementation
 
-**NOTE**: LLM usage is not allowed for this assessment. If we detect LLM usage, your application will be **terminated**.
+<span style="color: red;">**NOTE: LLM usage is not allowed for this assessment. If we detect LLM usage, your application will be terminated.**</span>
 
 ---
 
