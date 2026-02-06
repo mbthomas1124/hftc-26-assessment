@@ -1,6 +1,6 @@
 # Technical Assessment: Limit Order Book Implementation
 
-$\color{red}{\LARGE\mathsf{\textbf{NOTE: LLM usage is not allowed for this assessment. If we detect LLM usage, your application will be terminated}}}$
+$\color{#FF4444}{\LARGE\mathsf{\textbf{NOTE: LLM usage is not allowed for this assessment. If we detect LLM usage, your application will be terminated}}}$
 
 ---
 ## Introduction
