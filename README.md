@@ -3,10 +3,9 @@
 $$
 \color{#D73A49}{\LARGE\mathsf{
 \begin{gathered}
-\textbf{NOTE: LLM usage is not allowed} \\
-\textbf{for any part of this assessment.} \\
-\textbf{Detected usage will result in} \\
-\textbf{immediate termination.}
+\textbf{NOTE: LLM usage is not allowed for this assessment.} \\
+\textbf{Detected usage will result in the immediate} \\
+\textbf{termination of your application.}
 \end{gathered}
 }}
 $$
