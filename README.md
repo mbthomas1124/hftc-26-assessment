@@ -1,11 +1,8 @@
 # Technical Assessment: Limit Order Book Implementation
 
-```diff
-- NOTE: LLM usage is not allowed for this assessment. If we detect LLM usage, your application will be terminated.
-```
+$\color{red}{\mathsf{\textbf{NOTE: LLM usage is not allowed for this assessment. If we detect LLM usage, your application will be terminated}}}$
 
 ---
-
 ## Introduction
 
 This assessment requires the implementation of a **Limit Order Book (LOB)**. A limit order book is a fundamental data structure used in financial markets to organize buy and sell interest by price level. Your objective is to develop a system that accurately maintains the state of the market and handles the depletion of liquidity as orders interact.
