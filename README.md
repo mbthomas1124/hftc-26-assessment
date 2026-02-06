@@ -10,7 +10,6 @@ $$
 }}
 $$
 
-
 ---
 ## Introduction
 
@@ -24,7 +23,6 @@ This assessment will test your familiarity with Python and GitHub. Furthermore, 
 
 #### **Complete the methods of the `StreamProcessor` class in `solutions.py`. <u>Do not modify any other files.</u>**
 
-
 ### Core Objectives
 The system must process a continuous stream of messages to perform the following:
 
@@ -34,17 +32,25 @@ The system must process a continuous stream of messages to perform the following
 
 ---
 
-## Environment Requirements
+## CRITICAL: Environment Requirements
 
 To ensure compatibility with the autograder and the internal testing suite, you **must** use **Python 3.11**. 
 
-* **Why 3.11?** The hidden test suite (`grader.py`) is pre-compiled for the Python 3.11 bytecode. Using other versions (such as 3.10, 3.12, or 3.13) will result in a `RuntimeError` or a `Bad Magic Number` error during execution.
+* **Why 3.11?** The hidden test suite is pre-compiled for the Python 3.11 bytecode. Using other versions (such as 3.10, 3.12, or 3.13) **will result in a RuntimeError or a Bad Magic Number error during execution.**
 * **Verification:** Before starting, verify your active version by running the following in your terminal:
-  ```bash
-  python --version
+```bash
+python --version
+```
 
 Both `solutions.py` and `test_public.py` include a version guard. If you attempt to execute the code using a version other than **Python 3.11**, the script will print an environment error and exit. This is to ensure that your local development environment matches the automated grading environment.
 
+---
+
+## PROHIBITED: External Packages
+
+**WARNING: YOU ARE STRICTLY PROHIBITED FROM USING ANY PACKAGES OUTSIDE OF THE PYTHON STANDARD LIBRARY.**
+
+Your solution must rely **entirely** on the Python Standard Library. You should only be installing `pytest` if you want to use the sample tests provided. However, if you import any outside packages (e.g., `pytest`, `numpy`, `pandas`, `requests`, etc.) in your actual `solutions.py`, **your code will fail all tests in our grader and you will receive a 0 for all test cases in this assessment**. This is because the internal grader does not have access to these packages.
 
 ---
 
@@ -67,9 +73,6 @@ Processes market messages to update the internal state of the book through match
         }
         ```
 * **Return Format:** `None`
-* **Assumptions:** * **Cancellations:** You may assume that a `CANCEL` request will only be issued for a `seq` identifier that currently exists in the book. No error handling for non-existent IDs is required.
-
----
 
 ### 2. get_mid_price() -> float
 Calculates the current mid-market price based on the best available liquidity.
@@ -78,24 +81,8 @@ Calculates the current mid-market price based on the best available liquidity.
 * **Return Format:** * **float**: The arithmetic mean of the highest buy price (Best Bid) and lowest sell price (Best Ask).
     * **Note**: Returns `0.0` if the book is empty on either the buy side or the sell side.
 
----
-
 ### 3. get_book_depth() -> Dict[str, List[Tuple[float, int]]]
 Provides a snapshot of the total liquidity available at every price level currently in the book.
-
-* **Input Arguments:** None
-* **Return Format:** * **Dict[str, List[Tuple[float, int]]]**: A dictionary with two keys, `"BIDS"` and `"ASKS"`.
-    * Each key maps to a list of tuples, where each tuple is `(price, total_volume_at_price)`.
-    * **Example Output:**
-        ```python
-        {
-            "BIDS": [(100.5, 500), (100.0, 1200)],
-            "ASKS": [(101.0, 300), (101.5, 800)]
-        }
-        ```
-    * **Sorting Requirement:**
-        * `BIDS`: Sorted by price in **descending** order (highest price first).
-        * `ASKS`: Sorted by price in **ascending** order (lowest price first).
 
 ---
 
@@ -111,6 +98,13 @@ The processor must prioritize the most competitive prices for all order interact
     * Incoming **SELL** orders must deplete the highest **Bid** prices first.
 3. **Sequential Fulfillment:** If an incoming order has sufficient volume to satisfy multiple price levels, it must continue to execute against subsequent levels until its volume is exhausted or the price is no longer compatible.
 4. **Residual Volume:** Any volume remaining after the execution process is complete is added to the book as resting liquidity (a **Bid** or an **Ask**) at its specified price level.
+
+### Cancellation Logic
+When a message arrives with `"action": "CANCEL"`, the system must immediately remove the specific order associated with the provided `seq` identifier.
+* **Identification:** You MUST track orders by `seq`. If multiple orders exist at the same price, a cancellation only affects the specific `seq` provided.
+* **Partial Fills:** If an order has been partially matched, a cancellation removes only the remaining volume.
+* **Message Format:** Cancellation messages will include the `seq` and `action` keys. They may also include `price`, `side`, and `volume` for informational purposes, but the `seq` is the primary key for removal.
+* **Assumptions:** You may assume a `CANCEL` will only be issued for a `seq` that currently exists in the book.book as resting liquidity.
 
 ---
 
